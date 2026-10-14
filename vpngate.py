@@ -21,7 +21,7 @@ import sys
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
-from urllib.parse import quote
+from lib.parse import quote
 
 import requests
 
@@ -41,7 +41,7 @@ VPNGATE_MIRROR = os.environ.get(
     "VPNGATE_MIRROR",
     "https://raw.githubusercontent.com/fdciabdul/Vpngate-Scraper-API/main/json/data.json",
 )
-WORKER_CHECK_URL = os.environ.get("CHECK_WORKER", "https://你的域名/check?sstp=vpn:vpn@")
+WORKER_CHECK_ = os.environ.get("CHECK_WORKER", "https://你的域名/check?sstp=vpn:vpn@")
 CONCURRENCY = max(1, int(os.environ.get("CHECK_CONCURRENCY", "32")))
 CHECK_TIMEOUT = float(os.environ.get("CHECK_TIMEOUT", "90"))
 MAX_CHECK_NODES = int(os.environ.get("MAX_CHECK_NODES", "0"))
@@ -95,7 +95,7 @@ EDGE_HOSTS = [
 # 优选 API 地址配置 (支持逗号分隔多个，可配置在 GitHub Action Secret / Env 中)
 OPTIMAL_API = os.environ.get("OPTIMAL_API", "https://cf.090227.xyz/ct?ips=6&port=443")
 
-NODES_URL = os.environ.get("NODES_URL", "https://YOUR_GITHUB_USERNAME.github.io/gate/nodes.txt")
+NODES_URL = os.environ.get("NODES_URL", "https://MAGIEMBEL676-A11Y.github.io/gate/nodes.txt")
 
 # ---------------------------------------------------------------------------
 # 日志
@@ -214,20 +214,20 @@ def parse_mirror_json(data):
 # ---------------------------------------------------------------------------
 # 优选 API 获取与解析
 # ---------------------------------------------------------------------------
-def fetch_optimal_api_endpoints(api_urls_str):
+def fetch_optimal_api_endpoints(api_s_str):
     """
     拉取优选 API，解析如: 172.66.1.179:443#CF 电信优选 格式的内容
     提取出纯 'IP:端口' (例如 172.66.1.179:443)
     """
-    if not api_urls_str.strip():
+    if not api_s_str.strip():
         return []
     
     endpoints = []
-    urls = [u.strip() for u in api_urls_str.split(",") if u.strip()]
-    for url in urls:
+    s = [u.strip() for u in api_s_str.split(",") if u.strip()]
+    for  in s:
         try:
-            log("OPTIMAL API", f"请求优选 API: {url}")
-            resp = requests.get(url, timeout=15, headers={"User-Agent": "Mozilla/5.0"})
+            log("OPTIMAL API", f"请求优选 API: {}")
+            resp = requests.get(, timeout=15, headers={"User-Agent": "Mozilla/5.0"})
             if resp.status_code == 200:
                 lines = resp.text.strip().splitlines()
                 count = 0
@@ -247,7 +247,7 @@ def fetch_optimal_api_endpoints(api_urls_str):
             else:
                 log("OPTIMAL API", f"API 返回状态码异常: {resp.status_code}")
         except Exception as e:
-            log("OPTIMAL API", f"拉取优选 API 失败 ({url}): {e}")
+            log("OPTIMAL API", f"拉取优选 API 失败 ({}): {e}")
     return endpoints
 
 def get_combined_edge_hosts():
@@ -324,7 +324,7 @@ def classify_network(host, exit_org, is_datacenter=None):
     return "unknown"
 
 def check_one(node, session):
-    url = WORKER_CHECK_URL + quote(f"{node['host']}:{node['port']}", safe="")
+     = WORKER_CHECK_ + quote(f"{node['host']}:{node['port']}", safe="")
     out = dict(node)
     out["protocol"] = "sstp"
     out["link"] = f"sstp://vpn:vpn@{node['host']}:{node['port']}"
@@ -333,7 +333,7 @@ def check_one(node, session):
     out["exit"] = None
     out["residential"] = "unknown"
     try:
-        r = session.get(url, timeout=CHECK_TIMEOUT, headers={"User-Agent": "Mozilla/5.0 (gate-checker)"})
+        r = session.get(, timeout=CHECK_TIMEOUT, headers={"User-Agent": "Mozilla/5.0 (gate-checker)"})
         if r.status_code != 200:
             out["error"] = f"HTTP {r.status_code}"
             out["worker_error"] = True
@@ -408,7 +408,7 @@ def build_outputs(results, raw_count, sstp_count, source):
     data = {
         "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC"),
         "source": source,
-        "worker": WORKER_CHECK_URL,
+        "worker": WORKER_CHECK_,
         "stats": stats,
         "countries": by_country,
         "available": available,
@@ -515,7 +515,7 @@ def main():
     log("WEBSITE", f"生成 {os.path.relpath(data_path, REPO_DIR)}")
     log("WEBSITE", f"生成 {os.path.relpath(html_path, REPO_DIR)}")
     log("WEBSITE", f"生成 {os.path.relpath(nodes_path, REPO_DIR)}")
-    log("USAGE", f"自动轮换: 把 {NODES_URL} 填入 edgetunnel 后台「自定义优选IP」框 (一次配置, 之后自动更新)")
+    log("USAGE", f"自动轮换: 把 {NODES_} 填入 edgetunnel 后台「自定义优选IP」框 (一次配置, 之后自动更新)")
     log("WEBSITE", "完成 (GitHub Pages 部署由 workflow 执行)")
 
 if __name__ == "__main__":
